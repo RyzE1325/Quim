@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucigrama de Proteínas Plasmáticas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            max-width: 1300px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #crossword-board {
+            display: grid;
+            gap: 0;
+            background-color: #333;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .cell {
+            width: 32px;
+            height: 32px;
+            background-color: white;
+            border: 1px solid #ccc;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .cell.empty {
+            background-color: #333;
+            border: none;
+        }
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            outline: none;
+            background: transparent;
+        }
+        .cell .number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+            color: #555;
+            line-height: 1;
+        }
+        .clues {
+            max-width: 450px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .clues h3 {
+            margin-top: 0;
+            color: #2980b9;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        .clues ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .clues li {
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .clues strong {
+            color: #e74c3c;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #27ae60;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Crucigrama: Proteínas Plasmáticas</h1>
+    <p>Haz clic en las casillas blancas para escribir. Usa el botón inferior si necesitas ayuda.</p>
+    
+    <div class="container">
+        <div id="crossword-board"></div>
+        
+        <div class="clues">
+            <h3>Horizontales</h3>
+            <ul id="across-clues"></ul>
+            
+            <h3>Verticales</h3>
+            <ul id="down-clues"></ul>
+        </div>
+    </div>
+
+    <button onclick="revealAnswers()">Revelar Solución</button>
+
+    <script>
+        const wordsData = [
+            { word: "HIPOALBUMINEMIA", clue: "Condición clínica de baja concentración de la principal proteína en sangre que provoca fuga de líquido y edema." },
+            { word: "PREALBUMINA", clue: "Proteína encargada de transportar la hormona tiroxina, y cuya disminución sugiere un cuadro de desnutrición severa." },
+            { word: "TRANSFERRINA", clue: "Proteína plasmática cuyos niveles elevados sugieren fuertemente una deficiencia de hierro." },
+            { word: "INMUNOGLOBULINA", clue: "Proteína de defensa sintetizada en el retículo endoplásmico de las células plasmáticas." },
+            { word: "ALBUMINA", clue: "Representa el 50% de las proteínas del plasma y actúa como una reserva móvil de aminoácidos para el cuerpo." },
+            { word: "FERRITINA", clue: "Principal proteína intracelular encargada de almacenar hierro, su nivel bajo indica depósitos agotados." },
+            { word: "TIROXINA", clue: "Hormona específica transportada por la prealbúmina en el torrente sanguíneo." },
+            { word: "HEPATOCITOS", clue: "Células especializadas del hígado donde ocurre la síntesis de la mayor parte de las proteínas plasmáticas." },
+            { word: "ONCOTICA", clue: "Presión vascular generada por proteínas que funciona como una 'esponja' para retener agua en los vasos sanguíneos." },
+            { word: "LISOSOMAS", clue: "Estructuras celulares internas donde se degradan los anticuerpos durante su proceso natural de recambio." }
+        ];
+
+        // Cuadrícula rediseñada manualmente para un cruce perfecto y libre de errores.
+        const gridSetup = [
+            { w: "HIPOALBUMINEMIA", r: 13, c: 5, dir: "H", num: 1 },
+            { w: "PREALBUMINA", r: 10, c: 9, dir: "V", num: 2 },
+            { w: "TRANSFERRINA", r: 11, c: 8, dir: "H", num: 3 },
+            { w: "INMUNOGLOBULINA", r: 11, c: 17, dir: "V", num: 4 },
+            { w: "ALBUMINA", r: 4, c: 19, dir: "V", num: 5 },
+            { w: "FERRITINA", r: 9, c: 6, dir: "V", num: 6 },
+            { w: "TIROXINA", r: 16, c: 0, dir: "H", num: 7 },
+            { w: "HEPATOCITOS", r: 1, c: 12, dir: "V", num: 8 },
+            { w: "ONCOTICA", r: 6, c: 9, dir: "H", num: 9 },
+            { w: "LISOSOMAS", r: 11, c: 3, dir: "V", num: 10 }
+        ];
+
+        const rows = 27;
+        const cols = 21;
+        const board = Array.from({ length: rows }, () => Array(cols).fill(null));
+        let isRevealed = false;
+
+        // Construir modelo de datos
+        gridSetup.forEach(item => {
+            const wordData = wordsData.find(wd => wd.word === item.w);
+            item.clue = wordData.clue;
+            
+            for (let i = 0; i < item.w.length; i++) {
+                let r = item.dir === "H" ? item.r : item.r + i;
+                let c = item.dir === "H" ? item.c + i : item.c;
+                
+                if (!board[r][c]) {
+                    board[r][c] = { letter: item.w[i], num: null, words: [] };
+                }
+                // Evitar sobreescribir el número si ya hay una intersección previa
+                if (i === 0 && !board[r][c].num) board[r][c].num = item.num;
+                board[r][c].words.push(item);
+            }
+        });
+
+        // Dibujar Cuadrícula
+        const boardEl = document.getElementById("crossword-board");
+        boardEl.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
+        boardEl.style.gridTemplateRows = `repeat(${rows}, 32px)`;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cellDiv = document.createElement("div");
+                const cellData = board[r][c];
+                
+                if (cellData) {
+                    cellDiv.className = "cell";
+                    
+                    if (cellData.num) {
+                        const numSpan = document.createElement("span");
+                        numSpan.className = "number";
+                        numSpan.innerText = cellData.num;
+                        cellDiv.appendChild(numSpan);
+                    }
+
+                    const input = document.createElement("input");
+                    input.maxLength = 1;
+                    input.dataset.letter = cellData.letter;
+                    cellDiv.appendChild(input);
+                } else {
+                    cellDiv.className = "cell empty";
+                }
+                boardEl.appendChild(cellDiv);
+            }
+        }
+
+        // Listar Pistas
+        const acrossList = document.getElementById("across-clues");
+        const downList = document.getElementById("down-clues");
+
+        gridSetup.sort((a, b) => a.num - b.num).forEach(item => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${item.num}.</strong> ${item.clue}`;
+            if (item.dir === "H") {
+                acrossList.appendChild(li);
+            } else {
+                downList.appendChild(li);
+            }
+        });
+
+        // Función del Botón
+        function revealAnswers() {
+            const inputs = document.querySelectorAll('.cell input');
+            inputs.forEach(input => {
+                if (!isRevealed) {
+                    input.value = input.dataset.letter;
+                    input.style.color = "#c0392b";
+                } else {
+                    input.value = "";
+                    input.style.color = "#333";
+                }
+            });
+            isRevealed = !isRevealed;
+            document.querySelector("button").innerText = isRevealed ? "Ocultar Solución" : "Revelar Solución";
+        }
+    </script>
+</body>
+</html>
